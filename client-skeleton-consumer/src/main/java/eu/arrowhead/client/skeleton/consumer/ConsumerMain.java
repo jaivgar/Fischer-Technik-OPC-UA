@@ -87,7 +87,8 @@ public class ConsumerMain implements ApplicationRunner {
 			String location= mdata.get("Location").toString();
 			String instance= mdata.get("Instance").toString();
 
-			if(device.equalsIgnoreCase(deviceinput)&& deviceType.equalsIgnoreCase(devicetypeinput)&& location.equalsIgnoreCase(locationinput)&& instance.equalsIgnoreCase(instanceinput)){
+			if((device.equalsIgnoreCase(deviceinput)||deviceinput.equalsIgnoreCase("All"))&& (deviceType.equalsIgnoreCase(devicetypeinput)|| devicetypeinput.equalsIgnoreCase("All"))
+					&& (location.equalsIgnoreCase(locationinput)|| locationinput.equalsIgnoreCase("All"))&& (instance.equalsIgnoreCase(instanceinput) || instanceinput.equalsIgnoreCase("All"))){
 				Device[i]= device; DeviceType[i]= deviceType; Location[i]= location; Instance[i]= instance;
 				nodeIdentifier[i]= "\"Machine Status\".\""+serviceDef+"\"";
 				i++;
