@@ -60,15 +60,30 @@ public class ConsumerMain implements ApplicationRunner {
 		String [] Instance=new String[29];
 		String [] nodeIdentifier= new String[29];
 
+		String instanceinput="";
 		Scanner in= new Scanner(System.in);
-		System.out.println("Enter the device Name: ");
+		System.out.println("Enter the device Name: Sensor/Actuator/All ");
 		String deviceinput= in.next();
-		System.out.println("Enter the device Type Name: ");
+		if(deviceinput.equalsIgnoreCase("Sensor"))
+			System.out.println("Enter the device Type Name: Phototransistor/Pushbutton/All ");
+		else
+			System.out.println("Enter the device Type Name: Motor/ConveyorBelt/Slider/All ");
+
 		String devicetypeinput= in.next();
-		System.out.println("Enter the Location : ");
+		if(devicetypeinput.equalsIgnoreCase("pushbutton") || devicetypeinput.equalsIgnoreCase("slider"))
+			System.out.println("Enter the Location : Loading/OffLoading/All ");
+		else if(devicetypeinput.equalsIgnoreCase("Motor"))
+			System.out.println("Enter the Location : Milling/Drilling/All ");
+		else
+			System.out.println("Enter the Location : Loading/Milling/Drilling/OffLoading/All ");
 		String locationinput= in.next();
-		System.out.println("Enter the instance number: ");
-		String instanceinput= in.next();
+		if(deviceinput.equalsIgnoreCase("Sensor")&& (locationinput.equalsIgnoreCase("Loading")|| locationinput.equalsIgnoreCase("OffLoading")|| locationinput.equalsIgnoreCase("all"))){
+			System.out.println("Enter the instance number: One/Two/All ");
+			instanceinput= in.next();
+		}
+		else
+			instanceinput= "One";
+
 		int i = 0;
 
 		//Finding list of devices based on the input value
@@ -101,7 +116,7 @@ public class ConsumerMain implements ApplicationRunner {
 			if(nodeIdentifier[k]!= null)
 				count++;
 		}
-
+		//Meta Data declaration
 		Map<String, String> meta= new HashMap<String, String>();
 
 		// --------------------- Read OPC-UA Variable using metadata---------------------------
@@ -112,10 +127,10 @@ public class ConsumerMain implements ApplicationRunner {
 			meta.put("Device",Device[i]);
 			meta.put("Location",Location[i]);
 
-			System.out.println(meta.get("DeviceType")+"/"+meta.get("Instance")+"/"+meta.get("Device")+"/"+meta.get("Location")+"/"+nodeIdentifier[i]);
+			//System.out.println(meta.get("DeviceType")+"/"+meta.get("Instance")+"/"+meta.get("Device")+"/"+meta.get("Location")+"/"+nodeIdentifier[i]);
 
 			//SIMPLE EXAMPLE OF INITIATING AN ORCHESTRATION
-			/*OrchestrationResultDTO result = orchestrate(meta);
+			OrchestrationResultDTO result = orchestrate(meta);
 			final HttpMethod httpMethod = HttpMethod.GET;//Http method should be specified in the description of the service.
 			final String address = result.getProvider().getAddress();
 			final int port = result.getProvider().getPort();
@@ -127,34 +142,47 @@ public class ConsumerMain implements ApplicationRunner {
 			}
 			final Object payload = null; //Can be null if not specified in the description of the service.
 
-			System.out.println("GET " + address + "/" + serviceUri);
+			//System.out.println("GET " + address + "/" + serviceUri);
 			final String consumedReadService = arrowheadService.consumeServiceHTTP(String.class, httpMethod, address, port, serviceUri, interfaceName, token, payload,  "DeviceType", meta.get("DeviceType"), "Instance", meta.get("Instance"), "Device", meta.get("Device"), "Location", meta.get("Location"),"nodeIdentifier", nodeIdentifier[i]);
-			System.out.println("Service response: " + consumedReadService);*/
+			System.out.println("Service response: Status of "+nodeIdentifier[i].replace("\"Machine Status\".","") +" is  "+ consumedReadService);
 
 		}
 
 		// --------------------- Write OPC-UA Variable ---------------------------
-		//result = orchestrate("write_square1");
-       /* result = orchestrate("write_start_OPC");
-		Map<String, String> meta2 = result.getMetadata();
-		// FIXME Why are the variables above (and therefore here) declared final? Thread safety? Performance? I've kept them final here (i.e. created new varibles instead of re-using the above), but I'd rather re-use the above variables if possible?
-		final HttpMethod httpMethod2 = HttpMethod.POST;
-		final String address2 = result.getProvider().getAddress();
-		final int port2 = result.getProvider().getPort();
-		final String serviceUri2 = result.getServiceUri();
-		final String interfaceName2 = result.getInterfaces().get(0).getInterfaceName(); //Simplest way of choosing an interface.
+		Scanner input1= new Scanner(System.in);
+		System.out.println("Do you want to start the Factory:Yes/No ");
+		String write= input1.next();
 
-		token = null;
-		if (result.getAuthorizationTokens() != null) {
-			token = result.getAuthorizationTokens().get(interfaceName); //Can be null when the security type of the provider is 'CERTIFICATE' or nothing.
+		if(write.equalsIgnoreCase("Yes")){
+			String ServiceDefinition= "write_test start opc";
+			String nodeId= "\"Machine Status\".\""+ServiceDefinition+"\"";
+			OrchestrationResultDTO result = orchestrate(ServiceDefinition);
+			Map<String, String> meta2 = result.getMetadata();
+			// FIXME Why are the variables above (and therefore here) declared final? Thread safety? Performance? I've kept them final here (i.e. created new varibles instead of re-using the above), but I'd rather re-use the above variables if possible?
+			final HttpMethod httpMethod2 = HttpMethod.POST;
+			final String address = result.getProvider().getAddress();
+			final int port = result.getProvider().getPort();
+			final String serviceUri = result.getServiceUri();
+			final String interfaceName = result.getInterfaces().get(0).getInterfaceName(); //Simplest way of choosing an interface.
+
+			String token = null;
+			if (result.getAuthorizationTokens() != null) {
+				token = result.getAuthorizationTokens().get(interfaceName); //Can be null when the security type of the provider is 'CERTIFICATE' or nothing.
+			}
+			final Object payload2 = null; //Can be null if not specified in the description of the service.
+
+			System.out.println("POST " + address + "/" + serviceUri);
+			String valueAsString = "true";
+			String valueAsString2 = "false";
+			final String consumedWriteService = arrowheadService.consumeServiceHTTP(String.class, httpMethod2, address, port, serviceUri, interfaceName, token, payload2,  "opcuaNodeId", meta2.get("nodeId"), "value", valueAsString);
+			System.out.println("Service response: " + consumedWriteService);
+			Thread.sleep(5000);
+			final String consumedWriteService2 = arrowheadService.consumeServiceHTTP(String.class, httpMethod2, address, port, serviceUri, interfaceName, token, payload2,  "opcuaNodeId", meta2.get("nodeId"), "value", valueAsString2);
+			System.out.println("Service response: " + consumedWriteService2);
 		}
-		final Object payload2 = null; //Can be null if not specified in the description of the service.
-
-		System.out.println("POST " + address2 + "/" + serviceUri2);
-		String valueAsString = "true";
-		boolean value1= true;
-		final String consumedWriteService = arrowheadService.consumeServiceHTTP(String.class, httpMethod2, address2, port2, serviceUri2, interfaceName2, token, payload2, "opcuaServerAddress", meta2.get("serverAddress"), "opcuaNamespace", meta2.get("namespace"), "opcuaNodeId", meta2.get("nodeId"), "value", valueAsString);
-		System.out.println("Service response: " + consumedWriteService); */
+		else{
+			System.out.println("Exiting code!!!");
+		}
 	}
 
 	/*--------------------Orchestration using just meta data-------------------------*/
@@ -167,7 +195,7 @@ public class ConsumerMain implements ApplicationRunner {
 				", Device="+metadata.get("Device")+
 				", Location="+metadata.get("Location")+"\");";
 
-		System.out.println(sql);
+		//System.out.println(sql);
 
 		//get service definition from metadata
 		String serviceDefinition="";
@@ -177,12 +205,10 @@ public class ConsumerMain implements ApplicationRunner {
 			Connection conn = DriverManager.getConnection(url,Consumer_Contsant.UserName,Consumer_Contsant.Passwd);
 			Statement stmt = conn.createStatement();
 			ResultSet rs;
-
-			//rs = stmt.executeQuery("select service_definition from arrowhead.service_definition where id=(select service_id FROM arrowhead.service_registry where metadata=\"http-method=GET, Device=Actuator, serverAddress=192.168.1.1%3A4840, namespace=3, nodeId=%22Machine+Status%22.%22Q7+Motor+milling+machine%22\");");
 			rs=stmt.executeQuery(sql);
 			while ( rs.next() ) {
 				serviceDefinition = rs.getString(1);
-				System.out.println(serviceDefinition);
+				//System.out.println(serviceDefinition);
 			}
 			conn.close();
 		} catch (Exception e) {
@@ -201,6 +227,36 @@ public class ConsumerMain implements ApplicationRunner {
 				.flag(Flag.TRIGGER_INTER_CLOUD, false); //When this flag is false or not specified, then orchestration will not look for providers in the neighbor clouds, when there is no proper provider in the local cloud. Otherwise it will.
                 //.flag(Flag.METADATA_SEARCH, true);
 		//System.out.println(orchestrationFormBuilder.requestedService(requestedService));
+
+		final OrchestrationFormRequestDTO orchestrationRequest = orchestrationFormBuilder.build();
+
+		OrchestrationResponseDTO response = null;
+		try {
+			response = arrowheadService.proceedOrchestration(orchestrationRequest);
+		} catch(final ArrowheadException ex) {
+			//Handle the unsuccessful request as you wish!
+		}
+
+		if(response ==null||response.getResponse().isEmpty()) {
+			//If no proper providers found during the orchestration process, then the response list will be empty. Handle the case as you wish!
+			System.out.println("FATAL ERROR: Orchestration response came back empty. Make sure the Service you try to consume is in the Service Registry and that the Consumer has the privileges to consume this Service (e.g. check intra_cloud_authorization and intra_cloud_interface_connection).");
+			System.exit(1);
+		}
+
+		final OrchestrationResultDTO result = response.getResponse().get(0); //Simplest way of choosing a provider.
+		return result;
+	}
+
+	public OrchestrationResultDTO orchestrate(String serviceDefinition) {
+		final Builder orchestrationFormBuilder = arrowheadService.getOrchestrationFormBuilder();
+
+		final ServiceQueryFormDTO requestedService = new ServiceQueryFormDTO();
+		requestedService.setServiceDefinitionRequirement(serviceDefinition);
+
+		orchestrationFormBuilder.requestedService(requestedService)
+				.flag(Flag.MATCHMAKING, false) //When this flag is false or not specified, then the orchestration response cloud contain more proper provider. Otherwise only one will be chosen if there is any proper.
+				.flag(Flag.OVERRIDE_STORE, true) //When this flag is false or not specified, then a Store Orchestration will be proceeded. Otherwise a Dynamic Orchestration will be proceeded.
+				.flag(Flag.TRIGGER_INTER_CLOUD, false); //When this flag is false or not specified, then orchestration will not look for providers in the neighbor clouds, when there is no proper provider in the local cloud. Otherwise it will.
 
 		final OrchestrationFormRequestDTO orchestrationRequest = orchestrationFormBuilder.build();
 
