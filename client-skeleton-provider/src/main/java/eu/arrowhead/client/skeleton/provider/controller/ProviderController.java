@@ -48,7 +48,8 @@ public class ProviderController {
 		try {
 			body = OPCUAInteractions.readNode(connection.getConnectedClient(), nodeId);
 			connection.dispose();
-			return body;
+			String Val = body.replace("Variant{value=","{");
+			return Val;
 		} catch (Exception ex) {
 			connection.dispose();
 			return "There was an error reading the OPC-UA node.";
@@ -57,19 +58,19 @@ public class ProviderController {
 
 	@RequestMapping(path = "/write/variable")
 	@ResponseBody
-	public String writeVariableNode(@RequestParam(name = "opcuaServerAddress") final String opcuaServerAddress, @RequestParam(name = "opcuaNamespace") final int namespaceIndex, @RequestParam(name = "opcuaNodeId") final String identifier, @RequestParam(name = "value") final String value) {
-		System.out.println("Got a write variable request:" + opcuaServerAddress + "/" + namespaceIndex + "/" + identifier + " value: " + value);
-		NodeId nodeId = new NodeId(namespaceIndex, identifier);
+	public String writeVariableNode(@RequestParam(name = "opcuaNodeId") final String identifier, @RequestParam(name = "value") final String value) {
+		System.out.println("Got a write variable request:" + opcuaServerAddress + "/" + rootNodeNamespaceIndex + "/" + identifier + " value: " + value);
+		NodeId nodeId = new NodeId(rootNodeNamespaceIndex, identifier);
 		boolean bolValue= false;
-		if(value== "true")
+		if(value.equalsIgnoreCase ("true"))
 			bolValue=true;
 		else bolValue=false;
 		String opcuaServerAddress1 = opcuaServerAddress.replaceAll("opc.tcp://", "");
 		OPCUAConnection connection = new OPCUAConnection(opcuaServerAddress1);
-		String body = "Wrote value: " + value;
+		String body = "Wrote value: " + bolValue;
 
 		try {
-			String status = OPCUAInteractions.writeNode(connection.getConnectedClient(), nodeId, value);
+			String status = OPCUAInteractions.writeNode(connection.getConnectedClient(), nodeId, bolValue);
 			//StatusCode status2 = OPCUAInteractions.writeNode2(connection.getConnectedClient(), nodeId, value).get();
 			System.out.println("Status Code: " + status);
 			connection.dispose();
