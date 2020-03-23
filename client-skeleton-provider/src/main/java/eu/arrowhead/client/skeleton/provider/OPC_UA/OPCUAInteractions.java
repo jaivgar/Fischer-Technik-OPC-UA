@@ -64,7 +64,7 @@ public class OPCUAInteractions {
         return client.writeValue(nodeId, new DataValue(new Variant(value)));
     }
 
-    public static String writeNode(OpcUaClient client, NodeId nodeId, String value) {
+    public static String writeNode(OpcUaClient client, NodeId nodeId, boolean value) {
 
         // FIXME There should be a way to programmatically get the type from Eclipse Milo and write the variable directly using that type. As far as I can see, however, Milo only supports writing Variants which requires the conversion of a value into an object before it can be written.
         String returnString = "";
@@ -80,7 +80,7 @@ public class OPCUAInteractions {
             }
 
             System.out.println("getIdentifier: " + node.getDataType().get().getIdentifier());
-            switch (id.intValue()) {
+            /*switch (id.intValue()) {
                 // See Identifiers class in package org.eclipse.milo.opcua.stack.core; for more information
                 case 11: // Double
                     val = Double.valueOf(value);
@@ -88,9 +88,10 @@ public class OPCUAInteractions {
                 case 6: //Int32
                     val = Integer.valueOf(value);
                     break;
-            }
+            }*/
 
-            DataValue data = new DataValue(new Variant(true),StatusCode.GOOD, null);
+            System.out.println("value passed as: "+value);
+            DataValue data = new DataValue(new Variant(value),StatusCode.GOOD, null);
             StatusCode status = client.writeValue(nodeId, data).get();
             System.out.println("Wrote DataValue: " + data + " status: " + status);
             returnString = status.toString();
