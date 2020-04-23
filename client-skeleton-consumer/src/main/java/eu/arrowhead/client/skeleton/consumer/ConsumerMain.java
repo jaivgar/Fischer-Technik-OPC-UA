@@ -22,6 +22,7 @@ import eu.arrowhead.common.exception.ArrowheadException;
 import eu.arrowhead.common.Utilities;
 import eu.arrowhead.common.SSLProperties;
 import eu.arrowhead.client.skeleton.consumer.Consumer_Contsant;
+//import eu.arrowhead.client.skeleton.provider.JSONReader;
 
 import java.io.FileReader;
 import java.sql.Connection;
@@ -54,11 +55,17 @@ public class ConsumerMain implements ApplicationRunner {
 	@Override
 	public void run(final ApplicationArguments args) throws Exception {
 
-		String [] Device=new String[29];
+		/*String [] Device=new String[29];
 		String [] DeviceType=new String[29];
 		String [] Location=new String[29];
 		String [] Instance=new String[29];
 		String [] nodeIdentifier= new String[29];
+
+		//-------------------
+		//JSONReader read= new JSONReader();
+		//System.out.println(read.GetServiceDefinition("Sensor","all", "all", "all"));
+
+		//-------------------
 
 		String instanceinput="";
 		Scanner in= new Scanner(System.in);
@@ -77,7 +84,7 @@ public class ConsumerMain implements ApplicationRunner {
 		else
 			System.out.println("Enter the Location : Loading/Milling/Drilling/OffLoading/All ");
 		String locationinput= in.next();
-		if(deviceinput.equalsIgnoreCase("Sensor")&& (locationinput.equalsIgnoreCase("Loading")|| locationinput.equalsIgnoreCase("OffLoading")|| locationinput.equalsIgnoreCase("all"))){
+		if((deviceinput.equalsIgnoreCase("Sensor")|| deviceinput.equalsIgnoreCase("all"))&& (locationinput.equalsIgnoreCase("Loading")|| locationinput.equalsIgnoreCase("OffLoading")|| locationinput.equalsIgnoreCase("all"))){
 			System.out.println("Enter the instance number: One/Two/All ");
 			instanceinput= in.next();
 		}
@@ -175,14 +182,80 @@ public class ConsumerMain implements ApplicationRunner {
 			String valueAsString = "true";
 			String valueAsString2 = "false";
 			final String consumedWriteService = arrowheadService.consumeServiceHTTP(String.class, httpMethod2, address, port, serviceUri, interfaceName, token, payload2,  "opcuaNodeId", meta2.get("nodeId"), "value", valueAsString);
-			System.out.println("Service response: " + consumedWriteService);
+			System.out.println("Starting Factory: " + consumedWriteService);
 			Thread.sleep(5000);
 			final String consumedWriteService2 = arrowheadService.consumeServiceHTTP(String.class, httpMethod2, address, port, serviceUri, interfaceName, token, payload2,  "opcuaNodeId", meta2.get("nodeId"), "value", valueAsString2);
-			System.out.println("Service response: " + consumedWriteService2);
+			System.out.println("Resetting Variable Input: " + consumedWriteService2);
 		}
 		else{
 			System.out.println("Exiting code!!!");
+		}*/
+
+		readservice();
+		writeservice();
+	}
+
+	public void readservice(){
+		String serviceDefinition="";
+		String ids="";
+		Scanner in1= new Scanner(System.in);
+		System.out.println("Enter the service you want to access to read value: sensorvalue or actuatorvalue");
+		serviceDefinition= in1.next();
+		if(serviceDefinition.equalsIgnoreCase("sensorvalue")){
+			ids="I1-I9";
 		}
+		else ids="Q1-Q10";
+		String componentId="";
+		Scanner in2= new Scanner(System.in);
+		System.out.println("Enter the component ID: "+ids+" /All");
+		componentId= in2.next();
+		if(componentId.equalsIgnoreCase("All"))
+			componentId="";
+
+		OrchestrationResultDTO result = orchestrate(serviceDefinition);
+		Map<String, String> meta1 = result.getMetadata();
+		final HttpMethod httpMethod = HttpMethod.GET;//Http method should be specified in the description of the service.
+		final String address = result.getProvider().getAddress();
+		final int port = result.getProvider().getPort();
+		final String serviceUri = result.getServiceUri();
+		final String interfaceName = result.getInterfaces().get(0).getInterfaceName(); //Simplest way of choosing an interface.
+		String token = null;
+
+		if (result.getAuthorizationTokens() != null) {
+			token = result.getAuthorizationTokens().get(interfaceName); //Can be null when the security type of the provider is 'CERTIFICATE' or nothing.
+		}
+		final Object payload = null; //Can be null if not specified in the description of the service.
+		System.out.println("GET " + address + serviceUri+"/"+componentId);
+		final String consumedReadService = arrowheadService.consumeServiceHTTP(String.class, httpMethod, address, port, serviceUri+"/"+componentId, interfaceName, token, payload);
+		System.out.println("Service response: " + consumedReadService);
+	}
+	public void writeservice(){
+		String actuatorId="";
+		Scanner in3= new Scanner(System.in);
+		System.out.println("Enter the Actuator ID to write new value: Q1-Q10");
+		actuatorId= in3.next();
+
+		String actuatorvalue="";
+		Scanner in4= new Scanner(System.in);
+		System.out.println("Enter the Actuator value to be passed");
+		actuatorvalue= in4.next();
+
+		OrchestrationResultDTO result = orchestrate("actuatorvalue");
+		Map<String, String> meta= result.getMetadata();
+		final HttpMethod httpMethod = HttpMethod.PUT;//Http method should be specified in the description of the service.
+		final String address = result.getProvider().getAddress();
+		final int port = result.getProvider().getPort();
+		final String serviceUri = result.getServiceUri();
+		final String interfaceName = result.getInterfaces().get(0).getInterfaceName(); //Simplest way of choosing an interface.
+		String token = null;
+
+		if (result.getAuthorizationTokens() != null) {
+			token = result.getAuthorizationTokens().get(interfaceName); //Can be null when the security type of the provider is 'CERTIFICATE' or nothing.
+		}
+		final Object payload = null; //Can be null if not specified in the description of the service.
+		System.out.println("PUT " + address +":"+port+ serviceUri+"/"+actuatorId+"/"+actuatorvalue);
+		final String consumedReadService = arrowheadService.consumeServiceHTTP(String.class, httpMethod, address, port, serviceUri+"/"+actuatorId+"/"+actuatorvalue, interfaceName, token, payload);
+		System.out.println("Service response: " + consumedReadService);
 	}
 
 	/*--------------------Orchestration using just meta data-------------------------*/
@@ -200,7 +273,7 @@ public class ConsumerMain implements ApplicationRunner {
 		//get service definition from metadata
 		String serviceDefinition="";
 		try {
-			DriverManager.registerDriver(new com.mysql.jdbc.Driver());
+			DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
 			String url = Consumer_Contsant.jdbcUrl;
 			Connection conn = DriverManager.getConnection(url,Consumer_Contsant.UserName,Consumer_Contsant.Passwd);
 			Statement stmt = conn.createStatement();
@@ -247,6 +320,7 @@ public class ConsumerMain implements ApplicationRunner {
 		return result;
 	}
 
+	/*--------------------Orchestration using ServiceDefinition-------------------------*/
 	public OrchestrationResultDTO orchestrate(String serviceDefinition) {
 		final Builder orchestrationFormBuilder = arrowheadService.getOrchestrationFormBuilder();
 
