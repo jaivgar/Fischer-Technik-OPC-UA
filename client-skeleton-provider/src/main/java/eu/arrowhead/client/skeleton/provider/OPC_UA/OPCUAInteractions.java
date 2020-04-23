@@ -40,15 +40,18 @@ public class OPCUAInteractions {
 
 
     public static String readNode(OpcUaClient client, NodeId nodeId) {
-        String returnString = "";
+        String val = "";
+        String returnString="";
         try {
             VariableNode node = client.getAddressSpace().createVariableNode(nodeId);
             DataValue value = node.readValue().get();
 
             CompletableFuture<DataValue> test = client.readValue(0.0, TimestampsToReturn.Both, nodeId);
             DataValue data = test.get();
+            System.out.println("nodeId Object: " + nodeId.toString());
             System.out.println("DataValue Object: " + data.getValue());
-            returnString = data.getValue().toString();
+            val = data.getValue().toString();
+            returnString = val.replace("Variant{value=","").replace("}", "");
         } catch (Exception e) {
             System.out.println("ERROR: " + e.toString());
         }
@@ -78,19 +81,8 @@ public class OPCUAInteractions {
             if(identifier instanceof UInteger) {
                 id = (UInteger) identifier;
             }
-
-            System.out.println("getIdentifier: " + node.getDataType().get().getIdentifier());
-            /*switch (id.intValue()) {
-                // See Identifiers class in package org.eclipse.milo.opcua.stack.core; for more information
-                case 11: // Double
-                    val = Double.valueOf(value);
-                    break;
-                case 6: //Int32
-                    val = Integer.valueOf(value);
-                    break;
-            }*/
-
             System.out.println("value passed as: "+value);
+            System.out.println("nodeid passed as: "+nodeId.toString());
             DataValue data = new DataValue(new Variant(value),StatusCode.GOOD, null);
             StatusCode status = client.writeValue(nodeId, data).get();
             System.out.println("Wrote DataValue: " + data + " status: " + status);
