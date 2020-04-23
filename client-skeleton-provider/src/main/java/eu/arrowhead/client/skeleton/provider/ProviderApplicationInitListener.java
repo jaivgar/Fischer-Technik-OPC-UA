@@ -7,22 +7,27 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
+import java.sql.SQLException;
 import java.util.*;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
 
+import eu.arrowhead.client.skeleton.provider.Entity.ServiceDBObject;
+import eu.arrowhead.client.skeleton.provider.Service.DeviceService;
 import eu.arrowhead.common.CommonConstants;
 import eu.arrowhead.common.dto.shared.ServiceRegistryRequestDTO;
 import eu.arrowhead.common.dto.shared.ServiceSecurityType;
 import eu.arrowhead.common.dto.shared.SystemRequestDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.milo.opcua.sdk.client.model.nodes.objects.AuditAddNodesEventNode;
 import org.jose4j.json.internal.json_simple.JSONArray;
 import org.jose4j.json.internal.json_simple.JSONObject;
 import org.jose4j.json.internal.json_simple.parser.JSONParser;
 import org.jose4j.json.internal.json_simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -36,6 +41,9 @@ import eu.arrowhead.common.core.CoreSystem;
 import eu.arrowhead.common.exception.ArrowheadException;
 import eu.arrowhead.client.skeleton.provider.OPC_UA.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
+
+import javax.annotation.PreDestroy;
+import javax.websocket.OnClose;
 
 @Component
 public class ProviderApplicationInitListener extends ApplicationInitListener {
@@ -98,29 +106,18 @@ public class ProviderApplicationInitListener extends ApplicationInitListener {
 		//Register services into ServiceRegistry
 
 		// "opc.tcp://" must be stripped off as Eclipse Milo will add this to the address regardless of whether it is there already
-		opcuaServerAddress = opcuaServerAddress.replaceAll("opc.tcp://", "");
-		System.out.println("SERVER_ADDRESS:" + opcuaServerAddress);
+		/*opcuaServerAddress = opcuaServerAddress.replaceAll("opc.tcp://", "");
+		System.out.println("OPC UA SERVER_ADDRESS:" + opcuaServerAddress);
 
 		JSONParser parser = new JSONParser();
 
 		try {
-			NodeId nodeId = new NodeId(rootNodeNamespaceIndex, rootNodeIdentifier);
-			OPCUAConnection connection = new OPCUAConnection(opcuaServerAddress);
-			Vector<String> nodesBeneath = OPCUAInteractions.browseNode(connection.getConnectedClient(), nodeId);
-			System.out.println(nodesBeneath);
-			connection.dispose();
 
 			//Read The JSON File SR_Entry
 			Object obj = parser.parse(new FileReader("client-skeleton-provider/src/main/resources/SR_Entry.json"));
 			JSONObject jsonObject =  (JSONObject) obj;
 			JSONArray Services = (JSONArray) jsonObject.get("Services");
 			Iterator<JSONObject> iterator = Services.iterator();
-
-				// FIXME Maybe create a custom object for this? This is somewhat hacked together now since I don't really know if this is even the proper way to register/orchestrate the OPC-UA variables...
-				/*String parts[] = nodeString.split(",");
-				String identifierPart[] = parts[1].split("=");
-				String identifier = identifierPart[1];
-				String serviceDefinition= identifier.substring(18,identifier.length()-1);*/
 
 				while (iterator.hasNext()) {
 					JSONObject iter=iterator.next();
@@ -132,7 +129,8 @@ public class ProviderApplicationInitListener extends ApplicationInitListener {
 					// Register read and write services
 					ServiceRegistryRequestDTO serviceRequest1 = createServiceRegistryRequest("read_" + serviceDef,  "/read/variable", HttpMethod.GET);
 					ServiceRegistryRequestDTO serviceRequest2 = createServiceRegistryRequest("write_" + serviceDef,  "/write/variable", HttpMethod.POST);
-					while (iter1.hasNext()){
+
+						while (iter1.hasNext()){
 						Map.Entry pair =iter1.next();
 						String Key= pair.getKey().toString();
 						String Value= pair.getValue().toString();
@@ -148,6 +146,8 @@ public class ProviderApplicationInitListener extends ApplicationInitListener {
 					    System.out.println("Registered write service for variable " + serviceDef + ".");
 				}
 
+
+
 		} catch (ParseException e) {
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
@@ -156,15 +156,39 @@ public class ProviderApplicationInitListener extends ApplicationInitListener {
 			e.printStackTrace();
 		} catch (Exception e) {
 			System.out.println("ERROR: Could not register to ServiceRegistry.");
-		}
+		}*/
+
+		ServiceRegistryRequestDTO serviceRequest3 = createServiceRegistryRequest("SensorValue","/factory/sensors",HttpMethod.GET);
+		ServiceRegistryRequestDTO serviceRequest4 = createServiceRegistryRequest("ActuatorValue","/factory/actuators",HttpMethod.GET);
+		ServiceRegistryRequestDTO serviceRequest5 = createServiceRegistryRequest("Monitorable","/factory/monitor",HttpMethod.GET);
+
+		serviceRequest3.getMetadata().put("param-definition", "definition");
+		serviceRequest3.getMetadata().put("param-value", "value");
+		arrowheadService.forceRegisterServiceToServiceRegistry(serviceRequest3);
+		System.out.println("Registered SensorValue service.");
+
+		serviceRequest4.getMetadata().put("param-definition", "definition");
+		serviceRequest4.getMetadata().put("param-value", "value");
+		arrowheadService.forceRegisterServiceToServiceRegistry(serviceRequest4);
+		System.out.println("Registered ActuatorValue service.");
+
+		serviceRequest5.getMetadata().put("param-serviceId", "serviceId");
+		serviceRequest5.getMetadata().put("param-systemId", "systemId");
+		serviceRequest5.getMetadata().put("param-serviceDefinition", "serviceDefinition");
+		arrowheadService.forceRegisterServiceToServiceRegistry(serviceRequest5);
+		System.out.println("Registered Monitorable service.");
+
 	}
-	
+
 	//-------------------------------------------------------------------------------------------------
 	@Override
 	public void customDestroy() {
 		//TODO: implement here any custom behavior on application shout down
+		logger.info("Unregistering services!!");
+		arrowheadService.unregisterServiceFromServiceRegistry("sensorvalue");
+		arrowheadService.unregisterServiceFromServiceRegistry("actuatorvalue");
 	}
-	
+
 	//=================================================================================================
 	// assistant methods
 
