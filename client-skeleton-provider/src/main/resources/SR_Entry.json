@@ -83,7 +83,7 @@
       }
     },
     {
-      "ServiceDef": "Q1 Motor slider 1 backward",
+      "ServiceDef": "Q1 Motor slider 1 forward",
       "MetaData": {
         "Device": "Actuator",
         "DeviceType": "Slider",
@@ -92,7 +92,7 @@
       }
     },
     {
-      "ServiceDef": "Q2 Motor slider 1 forward",
+      "ServiceDef": "Q2 Motor slider 1 backward",
       "MetaData": {
         "Device": "Actuator",
         "DeviceType": "Slider",
@@ -101,7 +101,7 @@
       }
     },
     {
-      "ServiceDef": "Q3 Motor slider 2 backward",
+      "ServiceDef": "Q3 Motor slider 2 forward",
       "MetaData": {
         "Device": "Actuator",
         "DeviceType": "Slider",
@@ -110,7 +110,7 @@
       }
     },
     {
-      "ServiceDef": "Q4 Motor slider 2 forward",
+      "ServiceDef": "Q4 Motor slider 2 backward",
       "MetaData": {
         "Device": "Actuator",
         "DeviceType": "Slider",
@@ -122,7 +122,7 @@
       "ServiceDef": "Q5 Motor conveyor belt feed",
       "MetaData": {
         "Device": "Actuator",
-        "DeviceType": "CoveyorBelt",
+        "DeviceType": "ConveyorBelt",
         "Location": "Loading",
         "Instance": "One"
       }
