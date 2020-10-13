@@ -3,6 +3,9 @@ import eu.arrowhead.client.skeleton.provider.Entity.Device;
 import eu.arrowhead.client.skeleton.provider.Entity.ServiceDBObject;
 import eu.arrowhead.client.skeleton.provider.JSONReader;
 import eu.arrowhead.client.skeleton.provider.Service.DeviceService;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
 import org.jose4j.json.internal.json_simple.JSONArray;
@@ -36,6 +39,8 @@ public class ProviderController {
 
 	@Value("${opc.ua.root_node_identifier}")
 	private String rootNodeIdentifier;
+	
+	private final Logger logger = LogManager.getLogger(ProviderController.class);
 
 	public ProviderController() throws IOException, ParseException {
 	}
@@ -45,6 +50,7 @@ public class ProviderController {
 	@RequestMapping(path = "monitor/echo")
 	@ResponseBody
 	public String echoService() {
+	    logger.info("Receiving echo request");
 		return "Got it!";
 	}
 
@@ -63,6 +69,7 @@ public class ProviderController {
 	@GetMapping(path = "/sensors")
 	@ResponseBody
 	public List<Device> getSensors() throws IOException, ParseException {
+	    logger.info("Receiving GET sensors request");
 		return DeviceService.getAllSensors();
 	}
 

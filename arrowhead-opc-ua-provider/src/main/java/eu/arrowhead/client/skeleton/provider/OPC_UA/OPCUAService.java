@@ -1,6 +1,8 @@
 package eu.arrowhead.client.skeleton.provider.OPC_UA;
 
 import eu.arrowhead.client.skeleton.provider.JSONReader;
+import eu.arrowhead.client.skeleton.provider.Provider_Constants;
+
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.jose4j.json.internal.json_simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +12,7 @@ import java.io.IOException;
 public class OPCUAService {
 
     // members
-    @Value("${opc.ua.connection_address}")
+    @Value(Provider_Constants.$ADDRESS_PLC_OPC_UA_SERVER_WD)
     private String opcuaServerAddress;
 
     @Value("${opc.ua.root_node_namespace}")
@@ -32,7 +34,7 @@ public class OPCUAService {
         String nodeIdentifier= "\"Machine Status\""+".\""+definition+"\"";
         NodeId nodeId = new NodeId(3, nodeIdentifier);
         //opcuaServerAddress = opcuaServerAddress.replaceAll("opc.tcp://", "");
-        OPCUAConnection connection = new OPCUAConnection("192.168.1.1:4840");
+        OPCUAConnection connection = new OPCUAConnection(opcuaServerAddress);
         try {
             returnval = OPCUAInteractions.readNode(connection.getConnectedClient(), nodeId);
             connection.dispose();
