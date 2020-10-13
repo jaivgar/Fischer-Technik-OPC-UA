@@ -187,6 +187,7 @@ public class ProviderApplicationInitListener extends ApplicationInitListener {
 		logger.info("Unregistering services!!");
 		arrowheadService.unregisterServiceFromServiceRegistry("sensorvalue");
 		arrowheadService.unregisterServiceFromServiceRegistry("actuatorvalue");
+		arrowheadService.unregisterServiceFromServiceRegistry("monitorable");
 	}
 
 	//=================================================================================================
