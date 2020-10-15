@@ -21,7 +21,7 @@ public class OPCUAService {
         String returnval="";
         JSONReader reader= new JSONReader(ComponentId);
         String definition= reader.getDefinition();
-        String nodeIdentifier= "\"Machine Status\""+".\""+definition+"\"";
+        String nodeIdentifier= "\""+definition+"\"";
         NodeId nodeId = new NodeId(3, nodeIdentifier);
         //opcuaServerAddress = opcuaServerAddress.replaceAll("opc.tcp://", "");
         OPCUAConnection connection = new OPCUAConnection(opcuaServerAddress);

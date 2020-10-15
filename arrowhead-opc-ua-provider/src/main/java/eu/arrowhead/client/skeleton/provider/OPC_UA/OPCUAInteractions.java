@@ -52,6 +52,7 @@ public class OPCUAInteractions {
             System.out.println("DataValue Object: " + data.getValue());
             val = data.getValue().toString();
             returnString = val.replace("Variant{value=","").replace("}", "");
+            System.out.println("DEBUG - Value = " + returnString);
         } catch (Exception e) {
             System.out.println("ERROR: " + e.toString());
         }
