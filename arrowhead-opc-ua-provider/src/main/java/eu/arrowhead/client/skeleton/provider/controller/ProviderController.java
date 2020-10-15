@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
 public class ProviderController {
 	//=================================================================================================
 	// members
-	@Value("${opc.ua.connection_address}")
+	@Value("${opc.ua.server.address}")
 	private String opcuaServerAddress;
 
 	@Value("${opc.ua.root_node_namespace}")

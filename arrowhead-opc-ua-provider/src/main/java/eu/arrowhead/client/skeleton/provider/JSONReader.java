@@ -20,15 +20,6 @@ import java.util.*;
 import se.jaime.properties.TypeSafeProperties;
 
 public class JSONReader {
-
-    @Value("${opc.ua.connection_address}")
-    public String opcuaServerAddress;
-
-    @Value("${opc.ua.root_node_namespace}")
-    public int rootNodeNamespaceIndex;
-
-    @Value("${opc.ua.root_node_identifier}")
-    public String rootNodeIdentifier;
     
     private static final TypeSafeProperties props = TypeSafeProperties.getProp();
 

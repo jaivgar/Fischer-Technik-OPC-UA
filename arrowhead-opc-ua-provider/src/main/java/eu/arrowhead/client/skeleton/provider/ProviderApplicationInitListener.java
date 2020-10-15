@@ -72,7 +72,7 @@ public class ProviderApplicationInitListener extends ApplicationInitListener {
 	@Value(ClientCommonConstants.$CLIENT_SERVER_PORT_WD)
 	private int mySystemPort;
 
-	@Value("${opc.ua.connection_address}")
+	@Value("${opc.ua.connection_address: error}")
 	private String opcuaServerAddress;
 
 	@Value("${opc.ua.root_node_namespace}")
