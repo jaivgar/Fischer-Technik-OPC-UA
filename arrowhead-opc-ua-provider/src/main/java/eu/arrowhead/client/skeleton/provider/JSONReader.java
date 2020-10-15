@@ -1,7 +1,9 @@
 package eu.arrowhead.client.skeleton.provider;
 
+import eu.arrowhead.client.library.util.ClientCommonConstants;
 import eu.arrowhead.client.skeleton.provider.OPC_UA.OPCUAConnection;
 import eu.arrowhead.client.skeleton.provider.OPC_UA.OPCUAInteractions;
+
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.jose4j.json.internal.json_simple.JSONArray;
 import org.jose4j.json.internal.json_simple.JSONObject;
@@ -15,6 +17,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.*;
 
+import se.jaime.properties.TypeSafeProperties;
+
 public class JSONReader {
 
     @Value("${opc.ua.connection_address}")
@@ -25,10 +29,13 @@ public class JSONReader {
 
     @Value("${opc.ua.root_node_identifier}")
     public String rootNodeIdentifier;
+    
+    private static final TypeSafeProperties props = TypeSafeProperties.getProp();
 
     //Finding list of devices based on the input value
     JSONParser parser = new JSONParser();
-    Object obj = parser.parse(new FileReader("client-skeleton-provider/src/main/resources/SR_Entry.json"));
+    Object obj = parser.parse(new FileReader(props.getProperty(Provider_Constants.PATH_TO_JSON_SR_ENTRY,
+                                                "arrowhead-opc-ua-provider/src/main/resources/SR_Entry.json")));
     JSONObject jsonObject =  (JSONObject) obj;
     JSONArray Services = (JSONArray) jsonObject.get("Services");
     Iterator<JSONObject> iterator = Services.iterator();
@@ -44,6 +51,7 @@ public class JSONReader {
     private String Definition="";
     private String Value="";
 
+    
 
    /* public JSONReader() throws IOException, ParseException {
 

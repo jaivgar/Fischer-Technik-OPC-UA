@@ -81,7 +81,6 @@ public class ProviderApplicationInitListener extends ApplicationInitListener {
 	@Value("${opc.ua.root_node_identifier}")
 	private String rootNodeIdentifier;
 
-
 	private final Logger logger = LogManager.getLogger(ProviderApplicationInitListener.class);
 	
 	//=================================================================================================
@@ -226,8 +225,10 @@ public class ProviderApplicationInitListener extends ApplicationInitListener {
 
 	private void setTokenSecurityFilter() {
 		if(!tokenSecurityFilterEnabled) {
-			logger.info("TokenSecurityFilter in not active");
+			logger.info("TokenSecurityFilter is not active");
 		} else {
+		    logger.info("Caution -> TokenSecurityFilter is Active");
+		    
 			final PublicKey authorizationPublicKey = arrowheadService.queryAuthorizationPublicKey();
 			if (authorizationPublicKey == null) {
 				throw new ArrowheadException("Authorization public key is null");
