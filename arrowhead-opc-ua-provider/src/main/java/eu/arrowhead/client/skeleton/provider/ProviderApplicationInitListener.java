@@ -206,13 +206,15 @@ public class ProviderApplicationInitListener extends ApplicationInitListener {
 		if (tokenSecurityFilterEnabled) {
 			systemRequest.setAuthenticationInfo(Base64.getEncoder().encodeToString(arrowheadService.getMyPublicKey().getEncoded()));
 			serviceRegistryRequest.setSecure(ServiceSecurityType.TOKEN);
-			serviceRegistryRequest.setInterfaces(List.of("HTTPS-SECURE-JSON"));
+			serviceRegistryRequest.setInterfaces(List.of("HTTP-SECURE-JSON"));
 		} else if (sslEnabled) {
 			systemRequest.setAuthenticationInfo(Base64.getEncoder().encodeToString(arrowheadService.getMyPublicKey().getEncoded()));
 			serviceRegistryRequest.setSecure(ServiceSecurityType.CERTIFICATE);
-			serviceRegistryRequest.setInterfaces(List.of("HTTPS-SECURE-JSON"));
-			serviceRegistryRequest.setSecure(ServiceSecurityType.NOT_SECURE);
-			serviceRegistryRequest.setInterfaces(List.of("HTTP-INSECURE-JSON"));
+			serviceRegistryRequest.setInterfaces(List.of("HTTP-SECURE-JSON"));
+		}
+		else {
+		    serviceRegistryRequest.setSecure(ServiceSecurityType.NOT_SECURE);
+            serviceRegistryRequest.setInterfaces(List.of("HTTP-INSECURE-JSON"));
 		}
 		serviceRegistryRequest.setProviderSystem(systemRequest);
 		serviceRegistryRequest.setServiceUri(serviceUri);
